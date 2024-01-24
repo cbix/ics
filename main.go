@@ -3,7 +3,11 @@ package main
 import (
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"sync"
+
+	"github.com/coreos/go-systemd/v22/activation"
 )
 
 type icsAdapter struct {
@@ -35,5 +39,20 @@ func main() {
 	for _, adapter := range adapters {
 		http.Handle(adapter.Path(), adapter)
 	}
-	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	listeners, err := activation.Listeners()
+	if err == nil && len(listeners) >= 1 {
+		wg := new(sync.WaitGroup)
+		wg.Add(len(listeners))
+		for _, l := range listeners {
+			go func(listener net.Listener) {
+				log.Println("Listening on systemd activated socket ...")
+				log.Fatal(http.Serve(listener, nil))
+				wg.Done()
+			}(l)
+		}
+		wg.Wait()
+	} else {
+		log.Fatal(http.ListenAndServe(":8083", nil))
+	}
 }
