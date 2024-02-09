@@ -11,22 +11,22 @@ import (
 )
 
 type icsAdapter struct {
-	name          string
-	url           string
-	description   string
-	writeCalendar func(w io.Writer) error
+	Name          string
+	Url           string
+	Description   string
+	WriteCalendar func(w io.Writer) error
 }
 
 func (a icsAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-type", "text/calendar")
-	if err := a.writeCalendar(w); err != nil {
-		log.Printf("Error writing calendar %s: %v", a.name, err)
+	if err := a.WriteCalendar(w); err != nil {
+		log.Printf("Error writing calendar %s: %v", a.Name, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func (a *icsAdapter) Path() string {
-	return "/" + a.name + ".ics"
+	return "/" + a.Name + ".ics"
 }
 
 var adapters []icsAdapter
@@ -39,6 +39,13 @@ func main() {
 	for _, adapter := range adapters {
 		http.Handle(adapter.Path(), adapter)
 	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-type", "text/html")
+		if err := writeIndex(w); err != nil {
+			log.Printf("Error writing index: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	})
 
 	listeners, err := activation.Listeners()
 	if err == nil && len(listeners) >= 1 {
