@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -58,6 +59,7 @@ var theateraachenTZ, _ = time.LoadLocation("Europe/Berlin")
 func theateraachenAdapter(w io.Writer) error {
 	cal := ics.NewCalendarFor("github.com/cbix/ics")
 	cal.SetName("Theater Aachen")
+	cal.SetColor("#f0ff3c")
 	cal.SetUrl(theateraachenUrl)
 	cal.SetTimezoneId("Europe/Berlin")
 	now := time.Now()
@@ -73,17 +75,22 @@ page:
 		if err != nil {
 			return err
 		}
+		if res.StatusCode != http.StatusOK {
+			return errors.New(fmt.Sprintf("received status %s", res.Status))
+		}
 		scanner := bufio.NewScanner(res.Body)
 		var jsonData []byte
+		found := false
 		for scanner.Scan() {
 			l := strings.Trim(scanner.Text(), " ;")
 			if strings.HasPrefix(l, theateraachenJsonPrefix) {
 				jsonData = []byte(strings.TrimPrefix(l, theateraachenJsonPrefix))
+				found = true
 				break
 			}
 		}
-		if len(jsonData) == 0 {
-			continue
+		if !found {
+			return errors.New("Expected JSON data not found")
 		}
 		var data theateraachenData
 		err = json.Unmarshal(jsonData, &data)
