@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	ics "github.com/arran4/golang-ical"
+	"github.com/arran4/golang-ical"
 )
 
 func init() {
