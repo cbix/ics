@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	RegisterAdapter("sonicballroom", sonicballroomUrl, "Live music bar in Cologne", sonicballroomAdapter)
+	RegisterAdapter("sonicballroom", sonicballroomUrl, "Live music bar in Cologne (beta)", sonicballroomAdapter)
 }
 
 const (
