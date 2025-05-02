@@ -3,3 +3,5 @@ services:
     image: cbix/ics
     build: .
     restart: always
+    ports:
+      - "127.0.0.1:8083:8083"
