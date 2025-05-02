@@ -1,4 +1,4 @@
-FROM golang:1.12-alpine AS builder
+FROM golang:1.21-alpine AS builder
 WORKDIR /build/ics
 ADD go.mod go.sum /build/ics/
 RUN go mod download
