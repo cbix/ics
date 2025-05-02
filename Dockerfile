@@ -1,10 +1,11 @@
-FROM golang:1.21-alpine AS builder
-WORKDIR /build/ics
-ADD go.mod go.sum /build/ics/
+FROM golang:alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum /app/
 RUN go mod download
-ADD . /build/ics/
+COPY *.go /app/
 RUN go build
 
 FROM alpine
-COPY --from=builder /build/ics/ics /usr/local/bin/ics
+RUN apk add --no-cache tzdata
+COPY --from=builder /app/ics /usr/local/bin/ics
 ENTRYPOINT ["/usr/local/bin/ics"]

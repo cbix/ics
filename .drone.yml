@@ -1,0 +1,113 @@
+---
+kind: pipeline
+type: docker
+name: ics amd64
+
+platform:
+  os: linux
+  arch: amd64
+
+environment:
+  DOCKER_BUILDKIT: 1
+
+steps:
+  - name: Build cbix/ics
+    image: plugins/docker
+    settings:
+      repo: cbix/ics
+      tags: latest-amd64
+      username: cbix
+      password:
+        from_secret: docker-pass
+    when:
+      event:
+        - push
+  - name: Build cbix/ics on PR
+    image: plugins/docker
+    settings:
+      repo: cbix/ics
+      tags: latest-amd64
+      dry_run: true
+    when:
+      event:
+        - pull_request
+
+trigger:
+  event:
+    - push
+    - pull_request
+  branch:
+    - main
+
+---
+kind: pipeline
+type: docker
+name: ics arm64
+
+platform:
+  os: linux
+  arch: arm64
+
+environment:
+  DOCKER_BUILDKIT: 1
+
+steps:
+  - name: Build cbix/ics
+    image: plugins/docker
+    settings:
+      repo: cbix/ics
+      tags: latest-arm64
+      username: cbix
+      password:
+        from_secret: docker-pass
+    when:
+      event:
+        - push
+  - name: Build cbix/ics on PR
+    image: plugins/docker
+    settings:
+      repo: cbix/ics
+      tags: latest-arm64
+      dry_run: true
+    when:
+      event:
+        - pull_request
+
+trigger:
+  event:
+    - push
+    - pull_request
+  branch:
+    - main
+
+---
+kind: pipeline
+type: docker
+name: ics manifest
+
+clone:
+  disable: true
+
+depends_on:
+  - ics amd64
+  - ics arm64
+
+steps:
+  - name: cbix/ics manifest
+    image: plugins/manifest
+    settings:
+      target: cbix/ics:latest
+      template: cbix/ics:latest-ARCH
+      platforms:
+        - linux/amd64
+        - linux/arm64
+      ignore_missing: true
+      username: cbix
+      password:
+        from_secret: docker-pass
+
+trigger:
+  event:
+    - push
+  branch:
+    - master
