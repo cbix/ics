@@ -1,5 +1,7 @@
 # ICS adapters
 
+[![Build Status](https://ci.cbix.de/api/badges/cbix/ics/status.svg)](https://ci.cbix.de/cbix/ics)
+
 This web service provides iCalendar (RFC 5545) feeds for certain websites that
 don't have such a feed already. These can be subscribed by any calendar app,
 such as
