@@ -1,0 +1,5 @@
+services:
+  ics:
+    image: cbix/ics
+    build: .
+    restart: always
