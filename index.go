@@ -3,6 +3,8 @@ package main
 import (
 	"html/template"
 	"io"
+	"net/http"
+	"strings"
 )
 
 var indexTpl = template.Must(template.New("index").Parse(`
@@ -31,4 +33,25 @@ var indexTpl = template.Must(template.New("index").Parse(`
 
 func writeIndex(w io.Writer) error {
 	return indexTpl.Execute(w, adapters)
+}
+
+// fetchHTML fetches an HTML page and returns its body as a string.
+// Reusable by any HTML-scraping adapter.
+func fetchHTML(url string) (string, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("User-Agent", "ics generator/0.1")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	buf := new(strings.Builder)
+	if _, err := io.Copy(buf, res.Body); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
